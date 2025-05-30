@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block title %}Results{% endblock %}
+
+{% block content %}
+<section class="results-header">
+    <div class="results-title">
+        <h2>Metadata Analysis Results</h2>
+        <p class="file-name">{{ file_info.filename }}</p>
+        <div class="file-meta">
+            <span><i class="fas fa-file"></i> {{ file_info.file_type|upper }} File</span>
+            <span><i class="fas fa-clock"></i> Analyzed on {{ file_info.upload_time.strftime('%Y-%m-%d %H:%M') }}</span>
+        </div>
+    </div>
+    <div class="action-buttons">
+        <a id="export-pdf" href="{{ url_for('download_pdf', file_id=file_info.id) }}"
+   class="btn btn-export">
+  <i class="fas fa-file-pdf"></i> Export PDF Report
+</a>
+        <button id="export-charts" class="btn btn-export">
+            <i class="fas fa-image"></i> Export Charts
+        </button>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="fas fa-undo"></i> Analyze Another File
+        </a>
+    </div>
+</section>
+
+<section class="risk-summary">
+    <div class="risk-levels">
+        <div class="risk-card high-risk scale-on-hover">
+            <h3>High Risk</h3>
+            <p class="risk-count">{{ chart_data.risk_counts.High }}</p>
+            <p class="risk-desc">Critical information leaks</p>
+        </div>
+        <div class="risk-card medium-risk scale-on-hover">
+            <h3>Medium Risk</h3>
+            <p class="risk-count">{{ chart_data.risk_counts.Medium }}</p>
+            <p class="risk-desc">Potential profiling data</p>
+        </div>
+        <div class="risk-card low-risk scale-on-hover">
+            <h3>Low Risk</h3>
+            <p class="risk-count">{{ chart_data.risk_counts.Low }}</p>
+            <p class="risk-desc">Benign technical data</p>
+        </div>
+    </div>
+</section>
+
+<section class="charts-section">
+    <h3 class="section-title">Metadata Risk Visualization</h3>
+    <div class="chart-container">
+        <div class="chart-card"><canvas id="riskPieChart"></canvas></div>
+        <div class="chart-card"><canvas id="riskBarChart"></canvas></div>
+        <div class="chart-card"><canvas id="riskDoughnutChart"></canvas></div>
+    </div>
+    <div class="chart-container">
+        <div class="chart-card"><canvas id="riskRadarChart"></canvas></div>
+        <div class="chart-card"><canvas id="riskPolarChart"></canvas></div>
+        <div class="chart-card"><canvas id="riskHorizontalBarChart"></canvas></div>
+    </div>
+</section>
+
+<section class="metadata-table-section">
+    <h3 class="section-title">Detailed Metadata</h3>
+    <div class="table-controls">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="metadata-search" placeholder="Search metadata...">
+        </div>
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="high">High Risk</button>
+            <button class="filter-btn" data-filter="medium">Medium Risk</button>
+            <button class="filter-btn" data-filter="low">Low Risk</button>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="metadata-table">
+            <thead><tr><th>Metadata Key</th><th>Value</th><th>Risk Level</th></tr></thead>
+            <tbody>
+                {% for item in metadata %}
+                <tr class="risk-{{ item.risk_level|lower }}">
+                    <td>{{ item.metadata_key }}</td>
+                    <td>
+                        {% if item.metadata_value|length > 50 %}
+                            <span class="truncated-text">{{ item.metadata_value[:50] }}...</span>
+                            <span class="full-text" style="display:none;">{{ item.metadata_value }}</span>
+                            <button class="toggle-text-btn">Show More</button>
+                        {% else %}
+                            {{ item.metadata_value }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="risk-badge risk-{{ item.risk_level|lower }}">
+                            {% if item.risk_level == 'High' %}<i class="fas fa-fire"></i>
+                            {% elif item.risk_level == 'Medium' %}<i class="fas fa-exclamation-triangle"></i>
+                            {% else %}<i class="fas fa-check-circle"></i>{% endif %}
+                            {{ item.risk_level }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="recommendations">
+    <h3 class="section-title">Recommendations</h3>
+    <div class="recommendation-cards">
+        {% if chart_data.risk_counts.High > 0 %}
+        <div class="recommendation-card urgent scale-on-hover">
+            <div class="rec-icon"><i class="fas fa-shield-alt"></i></div>
+            <div class="rec-content">
+                <h4>Urgent Action Needed</h4>
+                <p>Your file contains high-risk metadata that could compromise your security. Remove metadata before sharing.</p>
+                <a href="#" class="rec-link">Learn how to clean your files <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+        {% endif %}
+        <div class="recommendation-card general scale-on-hover">
+            <div class="rec-icon"><i class="fas fa-lightbulb"></i></div>
+            <div class="rec-content">
+                <h4>General Best Practices</h4>
+                <ul>
+                    <li>Always check files for metadata before sharing</li>
+                    <li>Use built-in privacy features</li>
+                    <li>Convert files to safer formats when possible</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+  <!-- Chart config (unchanged) -->
+  <script src="{{ url_for('static', filename='js/chart-config.js') }}"></script>
+  <!-- html2canvas for charts export -->
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <!-- jsPDF UMD build -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.legacy.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const metadataRows = document.querySelectorAll('.metadata-table tbody tr');
+    const searchInput = document.getElementById('metadata-search');
+
+    // Filter by Risk Level
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            button.classList.add('active');
+
+            const filter = button.getAttribute('data-filter');
+
+            metadataRows.forEach(row => {
+                row.style.display = 'table-row'; // Reset all
+
+                if (filter !== 'all' && !row.classList.contains('risk-' + filter)) {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Re-apply search filter if any text is entered
+            const query = searchInput.value.toLowerCase().trim();
+            if (query) {
+                metadataRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    if (!text.includes(query)) {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+        });
+    });
+
+    // Search Functionality
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase().trim();
+        const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+
+        metadataRows.forEach(row => {
+            let matchesFilter = true;
+            let matchesSearch = row.textContent.toLowerCase().includes(query);
+
+            if (activeFilter !== 'all' && !row.classList.contains('risk-' + activeFilter)) {
+                matchesFilter = false;
+            }
+
+            row.style.display = (matchesFilter && matchesSearch) ? 'table-row' : 'none';
+        });
+    });
+});
+</script>
+
+
+
+<script>
+    // CHART IMAGE EXPORT BUTTON
+    document.getElementById('export-charts').addEventListener('click', function () {
+        html2canvas(document.querySelector('.charts-section')).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'metadata_charts_{{ file_info.filename }}.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    });
+});
+</script>
+
+
+<script>
+
+    // CHART IMAGE EXPORT BUTTON
+    document.getElementById('export-charts').addEventListener('click', function () {
+        html2canvas(document.querySelector('.charts-section')).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'metadata_charts_{{ file_info.filename }}.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    });
+
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('export-charts').addEventListener('click', function () {
+        html2canvas(document.querySelector('.charts-section')).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'metadata_charts_{{ file_info.filename }}.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    });
+});
+</script>
+
+<script src="{{ url_for('static', filename='js/chart-config.js') }}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prepare chart data
+    const chartData = {
+        labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+        datasets: [{
+            label: 'Risk Count',
+            data: [
+                {{ chart_data.risk_counts.High }},
+                {{ chart_data.risk_counts.Medium }},
+                {{ chart_data.risk_counts.Low }}
+            ],
+            backgroundColor: [
+                'rgba(231, 76, 60, 0.7)',
+                'rgba(243, 156, 18, 0.7)',
+                'rgba(46, 204, 113, 0.7)'
+            ],
+            borderColor: [
+                'rgba(231, 76, 60, 1)',
+                'rgba(243, 156, 18, 1)',
+                'rgba(46, 204, 113, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    // Initialize all charts
+    function initCharts() {
+        // Pie Chart
+        new Chart(
+            document.getElementById('riskPieChart'),
+            {
+                type: 'pie',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' },
+                        title: {
+                            display: true,
+                            text: 'Risk Distribution',
+                            color: '#f1f1f1',
+                            font: { size: 16 }
+                        }
+                    }
+                }
+            }
+        );
+
+        // Bar Chart
+        new Chart(
+            document.getElementById('riskBarChart'),
+            {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Risk Counts',
+                            color: '#f1f1f1',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            }
+        );
+
+        // Doughnut Chart
+        new Chart(
+            document.getElementById('riskDoughnutChart'),
+            {
+                type: 'doughnut',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Risk Proportions',
+                            color: '#f1f1f1',
+                            font: { size: 16 }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            }
+        );
+
+        // Radar Chart
+        new Chart(
+            document.getElementById('riskRadarChart'),
+            {
+                type: 'radar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Risk Levels',
+                        data: chartData.datasets[0].data,
+                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(52, 152, 219, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Risk Radar Chart',
+                            color: '#f1f1f1',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0
+                        }
+                    }
+                }
+            }
+        );
+
+        // Polar Area Chart
+        new Chart(
+            document.getElementById('riskPolarChart'),
+            {
+                type: 'polarArea',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Risk Polar Chart',
+                            color: '#f1f1f1',
+                            font: { size: 16 }
+                        }
+                    },
+                    scale: {
+                        ticks: { beginAtZero: true }
+                    }
+                }
+            }
+        );
+
+        // Horizontal Bar Chart
+        new Chart(
+            document.getElementById('riskHorizontalBarChart'),
+            {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Horizontal Risk View',
+                            color: '#f1f1f1',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            }
+        );
+    }
+
+    // Call the function
+    initCharts();
+});
+
+</script>
+
+{% endblock %}

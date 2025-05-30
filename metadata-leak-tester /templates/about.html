@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}About{% endblock %}
+
+{% block content %}
+<section class="about-section animated-fade-in">
+    <div class="about-content">
+        <h2>About the Simulated Metadata Leak Tester</h2>
+        <p class="subtitle">Understanding the invisible risks in your digital files</p>
+        
+        <div class="about-card scale-on-hover">
+            <h3><i class="fas fa-bullseye"></i> Our Mission</h3>
+            <p>In today's digital world, we share files constantly - photos, documents, and more. But these files often contain hidden metadata that can reveal more than we intend. Our tool helps you understand what metadata is and what risks it might pose to your privacy and security.</p>
+        </div>
+        
+        <div class="about-card scale-on-hover">
+            <h3><i class="fas fa-code"></i> How It Works</h3>
+            <p>When you upload a file, our system extracts and analyzes the embedded metadata, categorizing it by risk level:</p>
+            <ul class="risk-levels-list">
+                <li><span class="risk-badge high-risk"><i class="fas fa-fire"></i> High Risk</span> - Potentially sensitive information like GPS locations</li>
+                <li><span class="risk-badge medium-risk"><i class="fas fa-exclamation-triangle"></i> Medium Risk</span> - Information that could be used for profiling</li>
+                <li><span class="risk-badge low-risk"><i class="fas fa-check-circle"></i> Low Risk</span> - Technical details with minimal privacy impact</li>
+            </ul>
+        </div>
+        
+        <div class="about-card scale-on-hover">
+            <h3><i class="fas fa-shield-alt"></i> Privacy & Ethics</h3>
+            <p>This is an educational tool only. We take your privacy seriously:</p>
+            <ul>
+                <li>Uploaded files are processed temporarily and then deleted</li>
+                <li>Only metadata is stored in our database, not file contents</li>
+                <li>No personal information is collected beyond what's needed for analysis</li>
+                <li>All analysis is performed locally on your device when possible</li>
+            </ul>
+            <p>Read our full <a href="{{ url_for('disclaimer') }}">Disclaimer and Ethics Statement</a> for more details.</p>
+        </div>
+        
+
+    </div>
+    
+    <div class="team-section">
+        <h3><i class="fas fa-users"></i> About the Developers</h3>
+        <p>This tool was created by cybersecurity students and educators to raise awareness about metadata privacy risks. Our goal is to make complex security concepts accessible to everyone.</p>
+        
+        <div class="features-grid">
+            <div class="feature-card scale-on-hover">
+                <div class="feature-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h3>Educational Focus</h3>
+                <p>Designed specifically to help students and professionals understand metadata risks.</p>
+            </div>
+            
+            <div class="feature-card scale-on-hover">
+                <div class="feature-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h3>Open Source</h3>
+                <p>The project is open source, allowing for community contributions and transparency.</p>
+            </div>
+            
+            <div class="feature-card scale-on-hover">
+                <div class="feature-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3>Continuous Improvement</h3>
+                <p>We regularly update the tool with new features and metadata detection capabilities.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

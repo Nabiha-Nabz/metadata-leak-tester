@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Disclaimer{% endblock %}
+
+{% block content %}
+<section class="disclaimer-section animated-fade-in">
+    <div class="disclaimer-content">
+        <h2>Ethics & Disclaimer</h2>
+        <p class="subtitle">Important information about using this tool</p>
+        
+        <div class="disclaimer-card scale-on-hover">
+            <h3><i class="fas fa-exclamation-triangle"></i> Tool Purpose</h3>
+            <p>The Simulated Metadata Leak Tester is designed for educational purposes only. It is intended to help users understand what metadata is embedded in their files and the potential privacy implications of sharing those files.</p>
+            <p>This tool should <strong>not</strong> be used to analyze files without permission from the owner, or for any malicious purposes.</p>
+        </div>
+        
+        <div class="disclaimer-card scale-on-hover">
+            <h3><i class="fas fa-user-shield"></i> Data Handling</h3>
+            <p>We take your privacy seriously:</p>
+            <ul>
+                <li>Uploaded files are processed temporarily and then <strong>permanently deleted</strong> from our servers</li>
+                <li>Only extracted metadata is stored in our database for educational analysis</li>
+                <li>No file contents are stored beyond the processing period</li>
+                <li>IP addresses are logged for security purposes but not linked to metadata results</li>
+            </ul>
+        </div>
+        
+        <div class="disclaimer-card scale-on-hover">
+            <h3><i class="fas fa-balance-scale"></i> Ethical Use Agreement</h3>
+            <p>By using this tool, you agree:</p>
+            <ol>
+                <li>To only upload files you own or have permission to analyze</li>
+                <li>Not to use this tool for malicious purposes</li>
+                <li>To respect the privacy of others</li>
+                <li>That the developers are not responsible for misuse of this tool</li>
+            </ol>
+            <div class="consent-box">
+                <p><strong>Important:</strong> This tool simulates real metadata extraction but is not responsible for how the information is used. Always consider the ethical implications before sharing metadata analysis results.</p>
+            </div>
+        </div>
+        
+        <div class="disclaimer-card scale-on-hover">
+            <h3><i class="fas fa-lock"></i> Security Limitations</h3>
+            <p>While we implement security best practices, please be aware:</p>
+            <ul>
+                <li>No system can be 100% secure</li>
+                <li>We recommend not uploading highly sensitive documents</li>
+                <li>For maximum privacy, consider using offline metadata tools</li>
+            </ul>
+            <p>If you discover any security vulnerabilities, please report them responsibly.</p>
+        </div>
+        
+        <div class="proceed-box">
+            <p>By using this tool, you acknowledge you have read and understood this disclaimer.</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-check-circle"></i> I Understand - Proceed to Tool
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
