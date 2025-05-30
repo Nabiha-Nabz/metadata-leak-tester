@@ -1,6 +1,5 @@
 # Metadata Leak Analyzer
 
-![Project Logo](static/images/logo.png)
 
 A web application that analyzes image and PDF files for potentially sensitive metadata leaks, categorizing risks and providing actionable recommendations.
 
