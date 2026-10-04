@@ -1,64 +1,47 @@
-# Metadata Leak Analyzer
+# Metadata Leak Tester
 
-
-A web application that analyzes image and PDF files for potentially sensitive metadata leaks, categorizing risks and providing actionable recommendations.
+Metadata Leak Tester is a privacy-focused Flask application that analyzes image and PDF metadata, categorizes potentially sensitive fields by risk, and generates clear visual and PDF reports.
 
 ## Features
 
-- **Comprehensive Metadata Extraction**: Supports JPG, PNG, and PDF files
-- **Risk Assessment**: Classifies metadata into High, Medium, and Low risk categories
-- **Visual Analytics**: Interactive charts to visualize risk distribution
-- **PDF Reporting**: Generate downloadable PDF reports of analysis results
-- **Privacy-Focused**: Files are processed temporarily and then deleted
+- Metadata extraction from JPG, PNG, and PDF files
+- High, medium, and low risk categorization
+- Interactive risk charts
+- Downloadable PDF analysis reports
+- Temporary upload handling
+- MySQL-backed upload and analysis records
 
-## Technologies Used
+## Technology
 
-- Python (Flask)
+- Python and Flask
+- Pillow, ExifRead, PyPDF2, and pdfminer.six
 - MySQL
-- Pillow (PIL)
-- PyPDF2
-- PDFMiner
-- ExifTool
-- WeasyPrint
-- Chart.js
-- HTML5/CSS3/JavaScript
+- WeasyPrint and Chart.js
+- HTML, CSS, and JavaScript
 
-## Installation
+## Local setup
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/metadata-leak-analyzer.git
-   cd metadata-leak-analyzer
+```bash
+git clone https://github.com/Nabiha-Nabz/metadata-leak-tester.git
+cd metadata-leak-tester
+python -m venv .venv
+```
 
-## Install dependencies
-    pip install -r requirements.txt
+Activate the environment, then run:
 
-## Set up MySQL database:
+```bash
+pip install -r requirements.txt
+copy .env.example .env
+```
 
-    Run the SQL script from metadata_leak_db.sql
+Create the MySQL schema from `metadata_leak_db.sql`, update `.env`, and start the app:
 
-    Configure database credentials in .env file
+```bash
+python app.py
+```
 
-## Run the application:
-    python app.py
+On macOS or Linux, use `cp .env.example .env`.
 
-Access the application at http://localhost:5000
+## Privacy note
 
-## Usage
-
-    Upload an image (JPG/PNG) or PDF file
-
-    View the detailed metadata analysis
-
-    Check risk categorization
-
-    Export results as PDF or chart images
-
-
-Contribution
-
-Contributions are welcome! Please open an issue or submit a pull request.
-
-License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+Test only files you are authorized to inspect. Metadata can expose names, software details, timestamps, device identifiers, and location information. Never commit uploaded files or real credentials.
