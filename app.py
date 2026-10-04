@@ -13,7 +13,7 @@ from weasyprint import HTML
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-only-change-me')
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'pdf'}
@@ -22,7 +22,7 @@ app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'pdf'}
 db_config = {
     'host': os.getenv('DB_HOST', 'localhost'),
     'user': os.getenv('DB_USER', 'metadata'),
-    'password': os.getenv('DB_PASSWORD', '123'),
+    'password': os.getenv('DB_PASSWORD', ''),
     'database': os.getenv('DB_NAME', 'metadatadb')
 }
 
